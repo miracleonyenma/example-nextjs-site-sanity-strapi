@@ -2,6 +2,7 @@
 import { PortableText, type SanityDocument } from "next-sanity";
 import { client } from "@/sanity/client";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 const PAGE_QUERY = `*[_type == "page" && slug.current == $slug][0]{
   _id, title, slug, body, seo
@@ -26,13 +27,31 @@ export default async function DynamicPage({
   }
 
   return (
-    <main className="container mx-auto max-w-4xl px-8 py-16">
-      <h1 className="text-4xl font-bold mb-8">{page.title}</h1>
-      {page.body && (
-        <div className="prose prose-lg max-w-none">
-          <PortableText value={page.body} />
+    <main className="site-section">
+      <div className="wrapper max-w-4xl">
+        {/* Page Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4 text-balance">
+            {page.title}
+          </h1>
         </div>
-      )}
+
+        {/* Page Content */}
+        {page.body && (
+          <article className="card default lg">
+            <div className="prose prose-lg prose-emerald max-w-none">
+              <PortableText value={page.body} />
+            </div>
+          </article>
+        )}
+
+        {/* Navigation Footer */}
+        <div className="mt-12 text-center">
+          <Link href="/" className="btn tertiary">
+            Back to Home
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }

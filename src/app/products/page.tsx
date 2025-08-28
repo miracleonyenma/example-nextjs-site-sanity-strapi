@@ -26,54 +26,70 @@ export default async function ProductsPage() {
   );
 
   return (
-    <main className="container mx-auto max-w-6xl px-8 py-16">
-      <h1 className="text-4xl font-bold mb-8">Products</h1>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => {
-          const imageUrl = product.gallery?.[0]
-            ? urlFor(product.gallery[0])?.width(400).height(300).url()
-            : null;
-          return (
-            <Link
-              key={product._id}
-              href={`/products/${product._id}`}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              {imageUrl && (
-                <Image
-                  src={imageUrl}
-                  alt={product.name}
-                  width={400}
-                  height={300}
-                  className="w-full h-64 object-cover"
-                />
-              )}
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-                <p className="text-2xl font-bold text-green-600 mb-2">
-                  ${product.price}
-                </p>
-                {!product.available && (
-                  <p className="text-red-600 font-semibold">Out of Stock</p>
-                )}
-                {product.tags?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {product.tags
-                      .slice(0, 3)
-                      .map((tag: string, index: number) => (
-                        <span
-                          key={index}
-                          className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+    <main className="site-section">
+      <div className="wrapper">
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4">Products</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Explore our carefully curated collection of premium products
+          </p>
+        </div>
+
+        <div className="card-grid cols-3">
+          {products.map((product) => {
+            const imageUrl = product.gallery?.[0]
+              ? urlFor(product.gallery[0])?.width(400).height(300).url()
+              : null;
+            return (
+              <article
+                key={product._id}
+                className="card default raised hoverable"
+              >
+                <Link href={`/products/${product._id}`} className="block">
+                  {/* Product Badge */}
+                  {!product.available && (
+                    <div className="card-badge">
+                      <span className="tag error sm">Out of Stock</span>
+                    </div>
+                  )}
+
+                  {imageUrl && (
+                    <div className="card-media">
+                      <Image
+                        src={imageUrl}
+                        alt={product.name}
+                        width={400}
+                        height={300}
+                        className="w-full h-64 object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <div className="card-header borderless px-4">
+                    <h2 className="card-title">{product.name}</h2>
+                    <p className="text-2xl font-bold text-emerald-600">
+                      ${product.price}
+                    </p>
                   </div>
-                )}
-              </div>
-            </Link>
-          );
-        })}
+
+                  <div className="card-content compact pt-0 p-4">
+                    {product.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {product.tags
+                          .slice(0, 3)
+                          .map((tag: string, index: number) => (
+                            <span key={index} className="tag secondary xs">
+                              {tag}
+                            </span>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </main>
   );

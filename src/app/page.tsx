@@ -1,4 +1,4 @@
-// ./src/app/page.tsx (updated homepage)
+// ./src/app/page.tsx (improved with design system)
 import Link from "next/link";
 import { type SanityDocument } from "next-sanity";
 import { client } from "@/sanity/client";
@@ -33,116 +33,114 @@ export default async function HomePage() {
   return (
     <main>
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-700 text-white">
-        <div className="container mx-auto max-w-6xl px-8 py-16">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold mb-6">Welcome to Your Site</h1>
-            <p className="text-xl mb-8 opacity-90">
-              Discover amazing products and insightful content
-            </p>
-            <div className="flex gap-4 justify-center">
-              <Link
-                href="/products"
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100"
-              >
-                Shop Now
-              </Link>
-              <Link
-                href="/blog"
-                className="border-2 border-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600"
-              >
-                Read Blog
-              </Link>
-            </div>
+      <section className="site-section bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white">
+        <div className="wrapper text-center">
+          <h1 className="text-5xl lg:text-6xl font-bold mb-6 text-balance">
+            Welcome to Jade Palace
+          </h1>
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            Discover amazing products and insightful content in our curated
+            collection
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Link href="/products" className="btn primary lg">
+              Shop Now
+            </Link>
+            <Link href="/blog" className="btn secondary lg">
+              Read Blog
+            </Link>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto max-w-6xl px-8 py-16">
-        {/* Featured Products */}
-        <section className="mb-16">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Featured Products</h2>
-            <Link
-              href="/products"
-              className="text-blue-600 hover:underline font-semibold"
-            >
-              View All →
-            </Link>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product) => {
-              const imageUrl = product.gallery?.[0]
-                ? urlFor(product.gallery[0])?.width(300).height(200).url()
-                : null;
-              return (
-                <div
-                  key={product._id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  {imageUrl && (
-                    <Image
-                      src={imageUrl}
-                      alt={product.name}
-                      width={300}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
-                  )}
-                  <div className="p-4">
-                    <h3 className="font-semibold mb-2">{product.name}</h3>
-                    <p className="text-2xl font-bold text-green-600">
-                      ${product.price}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+      <div className="site-section">
+        <div className="wrapper space-y-16">
+          {/* Featured Products */}
+          <section>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl lg:text-4xl font-bold">
+                Featured Products
+              </h2>
+              <Link href="/products" className="btn ghost">
+                View All →
+              </Link>
+            </div>
+            <div className="card-grid cols-4">
+              {products.map((product) => {
+                const imageUrl = product.gallery?.[0]
+                  ? urlFor(product.gallery[0])?.width(300).height(200).url()
+                  : null;
+                return (
+                  <Link
+                    key={product._id}
+                    href={`/products/${product._id}`}
+                    className="card default raised hoverable interactive"
+                  >
+                    {imageUrl && (
+                      <div className="card-media">
+                        <Image
+                          src={imageUrl}
+                          alt={product.name}
+                          width={300}
+                          height={200}
+                          className="w-full h-48 object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="card-content p-2 pb-4">
+                      <h3 className="card-title sm">{product.name}</h3>
+                      <p className="text-2xl font-bold text-emerald-600">
+                        ${product.price}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
 
-        {/* Latest Posts */}
-        <section>
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Latest Posts</h2>
-            <Link
-              href="/blog"
-              className="text-blue-600 hover:underline font-semibold"
-            >
-              View All →
-            </Link>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {posts.map((post) => {
-              const imageUrl = post.image
-                ? urlFor(post.image)?.width(400).height(250).url()
-                : null;
-              return (
-                <Link
-                  key={post._id}
-                  href={`/blog/${post.slug.current}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  {imageUrl && (
-                    <Image
-                      src={imageUrl}
-                      alt={post.title}
-                      width={400}
-                      height={250}
-                      className="w-full h-48 object-cover"
-                    />
-                  )}
-                  <div className="p-4">
-                    <h3 className="font-semibold mb-2">{post.title}</h3>
-                    <p className="text-gray-600 text-sm">
-                      {new Date(post.publishedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
+          {/* Latest Posts */}
+          <section>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl lg:text-4xl font-bold">Latest Posts</h2>
+              <Link href="/blog" className="btn ghost">
+                View All →
+              </Link>
+            </div>
+            <div className="card-grid cols-3">
+              {posts.map((post) => {
+                const imageUrl = post.image
+                  ? urlFor(post.image)?.width(400).height(250).url()
+                  : null;
+                return (
+                  <Link
+                    key={post._id}
+                    href={`/blog/${post.slug.current}`}
+                    className="card default raised hoverable interactive"
+                  >
+                    {imageUrl && (
+                      <div className="card-media">
+                        <Image
+                          src={imageUrl}
+                          alt={post.title}
+                          width={400}
+                          height={250}
+                          className="w-full h-48 object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="card-content compact p-2 pb-4">
+                      <h3 className="card-title sm">{post.title}</h3>
+                      <p className="card-subtitle">
+                        {new Date(post.publishedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   );

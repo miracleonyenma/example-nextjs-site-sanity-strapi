@@ -27,64 +27,74 @@ export default async function BlogPage() {
   const posts = await client.fetch<SanityDocument[]>(POSTS_QUERY, {}, options);
 
   return (
-    <main className="container mx-auto max-w-6xl px-8 py-16">
-      <h1 className="text-4xl font-bold mb-8">Blog</h1>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.map((post) => {
-          const imageUrl = post.image
-            ? urlFor(post.image)?.width(400).height(250).url()
-            : null;
-          return (
-            <Link
-              key={post._id}
-              href={`/blog/${post.slug.current}`}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              {imageUrl && (
-                <Image
-                  src={imageUrl}
-                  alt={post.title}
-                  width={400}
-                  height={250}
-                  className="w-full h-48 object-cover"
-                />
-              )}
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
-                <p className="text-gray-600 text-sm mb-2">
-                  {new Date(post.publishedAt).toLocaleDateString()}
-                </p>
-                {post.authors?.length > 0 && (
-                  <p className="text-gray-600 text-sm mb-2">
-                    By{" "}
-                    {post.authors
-                      .map((author: { name: string }) => author.name)
-                      .join(", ")}
-                  </p>
-                )}
-                {post.categories?.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {post.categories.slice(0, 2).map(
-                      (
-                        category: {
-                          title: string;
-                        },
-                        index: number
-                      ) => (
-                        <span
-                          key={index}
-                          className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs"
-                        >
-                          {category.title}
-                        </span>
-                      )
+    <main className="site-section">
+      <div className="wrapper">
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4">Blog</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Discover insights, stories, and updates from our community
+          </p>
+        </div>
+
+        <div className="card-grid cols-3">
+          {posts.map((post) => {
+            const imageUrl = post.image
+              ? urlFor(post.image)?.width(400).height(250).url()
+              : null;
+            return (
+              <article key={post._id} className="card default raised hoverable">
+                <Link href={`/blog/${post.slug.current}`} className="block">
+                  {imageUrl && (
+                    <div className="card-media">
+                      <Image
+                        src={imageUrl}
+                        alt={post.title}
+                        width={400}
+                        height={250}
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <div className="card-header borderless px-2">
+                    <h2 className="card-title">{post.title}</h2>
+                    <p className="card-subtitle">
+                      {new Date(post.publishedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <div className="card-content compact px-2 pb-4">
+                    {post.authors?.length > 0 && (
+                      <p className="text-sm text-muted-foreground mb-3">
+                        By{" "}
+                        {post.authors
+                          .map((author: { name: string }) => author.name)
+                          .join(", ")}
+                      </p>
+                    )}
+
+                    {post.categories?.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {post.categories.slice(0, 2).map(
+                          (
+                            category: {
+                              title: string;
+                            },
+                            index: number
+                          ) => (
+                            <span key={index} className="tag info xs">
+                              {category.title}
+                            </span>
+                          )
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-            </Link>
-          );
-        })}
+                </Link>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </main>
   );
