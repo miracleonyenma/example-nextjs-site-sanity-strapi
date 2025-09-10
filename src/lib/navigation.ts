@@ -1,10 +1,9 @@
-// ./src/lib/navigation.ts
-import { client } from "@/sanity/client";
-import { type SanityDocument } from "next-sanity";
-
-const PAGES_QUERY = `*[_type == "page" && defined(slug.current)]|order(title asc){
-  _id, title, slug
-}`;
+import { strapiRequest } from "./strapi-client";
+import {
+  adaptStrapiPage,
+  type StrapiResponse,
+  type StrapiEntity,
+} from "@/utils/strapi-adapter";
 
 export interface NavigationPage {
   _id: string;
@@ -13,11 +12,20 @@ export interface NavigationPage {
 }
 
 export async function getNavigationPages(): Promise<NavigationPage[]> {
-  const options = { next: { revalidate: 60 } }; // Cache for 1 minute
-  return client.fetch<NavigationPage[]>(PAGES_QUERY, {}, options);
+  try {
+    const response: StrapiResponse<StrapiEntity[]> = await strapiRequest(
+      "pages?fields[0]=title&fields[1]=slug&sort=title:asc",
+      { next: { revalidate: 60 } }
+    );
+
+    return response.data.map(adaptStrapiPage);
+  } catch (error) {
+    console.error("Failed to fetch navigation pages:", error);
+    return [];
+  }
 }
 
-// Define which pages should appear in main navigation vs footer
+// Keep your existing navigation constants
 export const MAIN_NAV_SLUGS = ["about", "contact"];
 export const FOOTER_QUICK_LINKS_SLUGS = ["about", "contact"];
 export const FOOTER_SUPPORT_SLUGS = ["help", "shipping", "returns", "privacy"];

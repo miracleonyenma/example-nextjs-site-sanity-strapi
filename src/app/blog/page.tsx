@@ -1,31 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ./src/app/blog/page.tsx
 import Link from "next/link";
-import { type SanityDocument } from "next-sanity";
-import { client } from "@/sanity/client";
 import Image from "next/image";
-import imageUrlBuilder from "@sanity/image-url";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-
-const POSTS_QUERY = `*[
-  _type == "post"
-  && defined(slug.current)
-]|order(publishedAt desc){
-  _id, title, slug, publishedAt, image,
-  authors[]->{ name },
-  categories[]->{ title }
-}`;
-
-const { projectId, dataset } = client.config();
-const urlFor = (source: SanityImageSource) =>
-  projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
-    : null;
+import { strapiRequest } from "@/lib/strapi-client";
+import { adaptStrapiPost, getStrapiImageUrl } from "@/utils/strapi-adapter";
 
 const options = { next: { revalidate: 30 } };
 
 export default async function BlogPage() {
-  const posts = await client.fetch<SanityDocument[]>(POSTS_QUERY, {}, options);
+  const response = await strapiRequest(
+    "posts?populate=*&sort=publishedAt:desc",
+    options
+  );
 
+  const posts = response.data.map(adaptStrapiPost);
   return (
     <main className="site-section">
       <div className="wrapper">
@@ -37,10 +25,8 @@ export default async function BlogPage() {
         </div>
 
         <div className="card-grid cols-3">
-          {posts.map((post) => {
-            const imageUrl = post.image
-              ? urlFor(post.image)?.width(400).height(250).url()
-              : null;
+          {posts.map((post: any) => {
+            const imageUrl = post.image ? getStrapiImageUrl(post.image) : null;
             return (
               <article key={post._id} className="card default raised hoverable">
                 <Link href={`/blog/${post.slug.current}`} className="block">

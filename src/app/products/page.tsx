@@ -1,29 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ./src/app/products/page.tsx
 import Link from "next/link";
-import { type SanityDocument } from "next-sanity";
-import { client } from "@/sanity/client";
 import Image from "next/image";
-import imageUrlBuilder from "@sanity/image-url";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-
-const PRODUCTS_QUERY = `*[
-  _type == "product"
-]|order(name asc){_id, name, price, available, tags, gallery}`;
-
-const { projectId, dataset } = client.config();
-const urlFor = (source: SanityImageSource) =>
-  projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
-    : null;
+import { strapiRequest } from "@/lib/strapi-client";
+import { adaptStrapiProduct, getStrapiImageUrl } from "@/utils/strapi-adapter";
 
 const options = { next: { revalidate: 30 } };
 
 export default async function ProductsPage() {
-  const products = await client.fetch<SanityDocument[]>(
-    PRODUCTS_QUERY,
-    {},
+  const response = await strapiRequest(
+    "products?populate=*&sort=name:asc",
     options
   );
+
+  const products = response.data.map(adaptStrapiProduct);
 
   return (
     <main className="site-section">
@@ -36,16 +26,19 @@ export default async function ProductsPage() {
         </div>
 
         <div className="card-grid cols-3">
-          {products.map((product) => {
+          {products.map((product: any) => {
             const imageUrl = product.gallery?.[0]
-              ? urlFor(product.gallery[0])?.width(400).height(300).url()
+              ? getStrapiImageUrl(product.gallery[0])
               : null;
             return (
               <article
                 key={product._id}
                 className="card default raised hoverable"
               >
-                <Link href={`/products/${product._id}`} className="block">
+                <Link
+                  href={`/products/${product.documentId}`}
+                  className="block"
+                >
                   {/* Product Badge */}
                   {!product.available && (
                     <div className="card-badge">

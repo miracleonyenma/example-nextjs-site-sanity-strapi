@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "cdn.sanity.io",
       },
+      {
+        hostname: "0a5a6f57f9f3.ngrok-free.app",
+      },
     ],
   },
 };

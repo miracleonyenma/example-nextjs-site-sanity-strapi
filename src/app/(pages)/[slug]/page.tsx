@@ -1,12 +1,9 @@
 // ./src/app/(pages)/[slug]/page.tsx
-import { PortableText, type SanityDocument } from "next-sanity";
-import { client } from "@/sanity/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-
-const PAGE_QUERY = `*[_type == "page" && slug.current == $slug][0]{
-  _id, title, slug, body, seo
-}`;
+import { strapiRequest } from "@/lib/strapi-client";
+import { adaptStrapiPage } from "@/utils/strapi-adapter";
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
 const options = { next: { revalidate: 30 } };
 
@@ -16,16 +13,17 @@ export default async function DynamicPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const page = await client.fetch<SanityDocument>(
-    PAGE_QUERY,
-    { slug },
+
+  const response = await strapiRequest(
+    `pages?populate=*&filters[slug][$eq]=${slug}`,
     options
   );
+
+  const page = response.data[0] ? adaptStrapiPage(response.data[0]) : null;
 
   if (!page) {
     notFound();
   }
-
   return (
     <main className="site-section">
       <div className="wrapper max-w-4xl">
@@ -40,7 +38,7 @@ export default async function DynamicPage({
         {page.body && (
           <article className="card default lg">
             <div className="prose prose-lg prose-emerald max-w-none">
-              <PortableText value={page.body} />
+              {page.body && <BlocksRenderer content={page.body} />}
             </div>
           </article>
         )}
@@ -63,11 +61,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const page = await client.fetch<SanityDocument>(
-    PAGE_QUERY,
-    { slug },
+
+  const response = await strapiRequest(
+    `pages?populate=*&filters[slug][$eq]=${slug}`,
     options
   );
+
+  const page = response.data[0] ? adaptStrapiPage(response.data[0]) : null;
 
   return {
     title: page?.seo?.title || page?.title || "Page",

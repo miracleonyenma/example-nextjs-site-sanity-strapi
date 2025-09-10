@@ -1,34 +1,30 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ./src/app/page.tsx (improved with design system)
-import Link from "next/link";
-import { type SanityDocument } from "next-sanity";
-import { client } from "@/sanity/client";
+import { strapiRequest } from "@/lib/strapi-client";
+import {
+  adaptStrapiPost,
+  adaptStrapiProduct,
+  getStrapiImageUrl,
+} from "@/utils/strapi-adapter";
 import Image from "next/image";
-import imageUrlBuilder from "@sanity/image-url";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-
-const POSTS_QUERY = `*[
-  _type == "post"
-  && defined(slug.current)
-]|order(publishedAt desc)[0...3]{_id, title, slug, publishedAt, image}`;
-
-const PRODUCTS_QUERY = `*[
-  _type == "product"
-  && available == true
-]|order(_createdAt desc)[0...4]{_id, name, price, gallery}`;
-
-const { projectId, dataset } = client.config();
-const urlFor = (source: SanityImageSource) =>
-  projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
-    : null;
+import Link from "next/link";
 
 const options = { next: { revalidate: 30 } };
 
 export default async function HomePage() {
-  const [posts, products] = await Promise.all([
-    client.fetch<SanityDocument[]>(POSTS_QUERY, {}, options),
-    client.fetch<SanityDocument[]>(PRODUCTS_QUERY, {}, options),
+  const [postsResponse, productsResponse] = await Promise.all([
+    strapiRequest(
+      "posts?populate=*&sort=publishedAt:desc&pagination[limit]=3",
+      options
+    ),
+    strapiRequest(
+      "products?populate=*&filters[available][$eq]=true&sort=createdAt:desc&pagination[limit]=4",
+      options
+    ),
   ]);
+
+  const posts = postsResponse.data.map(adaptStrapiPost);
+  const products = productsResponse.data.map(adaptStrapiProduct);
 
   return (
     <main>
@@ -66,9 +62,9 @@ export default async function HomePage() {
               </Link>
             </div>
             <div className="card-grid cols-4">
-              {products.map((product) => {
+              {products.map((product: any) => {
                 const imageUrl = product.gallery?.[0]
-                  ? urlFor(product.gallery[0])?.width(300).height(200).url()
+                  ? getStrapiImageUrl(product.gallery[0])
                   : null;
                 return (
                   <Link
@@ -108,9 +104,9 @@ export default async function HomePage() {
               </Link>
             </div>
             <div className="card-grid cols-3">
-              {posts.map((post) => {
+              {posts.map((post: any) => {
                 const imageUrl = post.image
-                  ? urlFor(post.image)?.width(400).height(250).url()
+                  ? getStrapiImageUrl(post.image)
                   : null;
                 return (
                   <Link

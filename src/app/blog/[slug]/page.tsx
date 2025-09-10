@@ -1,18 +1,11 @@
 // ./src/app/blog/[slug]/page.tsx
-import { PortableText, type SanityDocument } from "next-sanity";
-import imageUrlBuilder from "@sanity/image-url";
-import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import { client } from "@/sanity/client";
+import { PortableText } from "next-sanity";
 import Link from "next/link";
 import Image from "next/image";
-
-const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]`;
-
-const { projectId, dataset } = client.config();
-const urlFor = (source: SanityImageSource) =>
-  projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
-    : null;
+import { strapiRequest } from "@/lib/strapi-client";
+import { adaptStrapiPost, getStrapiImageUrl } from "@/utils/strapi-adapter";
+import { notFound } from "next/navigation";
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
 const options = { next: { revalidate: 30 } };
 
@@ -21,16 +14,19 @@ export default async function PostPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const post = await client.fetch<SanityDocument>(
-    POST_QUERY,
-    await params,
+  const { slug } = await params;
+
+  const response = await strapiRequest(
+    `posts?populate*&filters[slug][$eq]=${slug}`,
     options
   );
 
-  const postImageUrl = post.image
-    ? urlFor(post.image)?.width(800).height(400).url()
-    : null;
+  const post = response.data[0] ? adaptStrapiPost(response.data[0]) : null;
+  const imageUrl = getStrapiImageUrl(post?.image);
 
+  if (!post) {
+    notFound();
+  }
   return (
     <main className="site-section">
       <div className="wrapper max-w-4xl">
@@ -52,10 +48,10 @@ export default async function PostPage({
         </header>
 
         {/* Featured Image */}
-        {postImageUrl && (
+        {imageUrl && (
           <div className="mb-8">
             <Image
-              src={postImageUrl}
+              src={imageUrl}
               alt={post.title}
               className="w-full aspect-video rounded-3xl object-cover"
               width={800}
@@ -67,7 +63,7 @@ export default async function PostPage({
         {/* Article Content */}
         <article className="card default lg">
           <div className="prose prose-lg prose-emerald max-w-none">
-            {Array.isArray(post.body) && <PortableText value={post.body} />}
+            {Array.isArray(post.body) && <BlocksRenderer content={post.body} />}
           </div>
         </article>
 

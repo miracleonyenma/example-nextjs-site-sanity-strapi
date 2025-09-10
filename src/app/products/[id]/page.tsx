@@ -1,20 +1,9 @@
 // ./src/app/products/[id]/page.tsx
-import { type SanityDocument } from "next-sanity";
-import { client } from "@/sanity/client";
 import Image from "next/image";
 import Link from "next/link";
-import imageUrlBuilder from "@sanity/image-url";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-
-const PRODUCT_QUERY = `*[_type == "product" && _id == $id][0]{
-  _id, name, price, available, tags, gallery, specifications
-}`;
-
-const { projectId, dataset } = client.config();
-const urlFor = (source: SanityImageSource) =>
-  projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
-    : null;
+import { strapiRequest } from "@/lib/strapi-client";
+import { adaptStrapiProduct, getStrapiImageUrl } from "@/utils/strapi-adapter";
 
 const options = { next: { revalidate: 30 } };
 
@@ -23,11 +12,10 @@ export default async function ProductPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const product = await client.fetch<SanityDocument>(
-    PRODUCT_QUERY,
-    await params,
-    options
-  );
+  const { id } = await params;
+
+  const response = await strapiRequest(`products/${id}`, options);
+  const product = adaptStrapiProduct(response.data);
 
   if (!product) {
     return (
@@ -64,10 +52,7 @@ export default async function ProductPage({
               <>
                 {product.gallery.map(
                   (image: SanityImageSource, index: number) => {
-                    const imageUrl = urlFor(image)
-                      ?.width(600)
-                      .height(400)
-                      .url();
+                    const imageUrl = getStrapiImageUrl(image);
                     return imageUrl ? (
                       <div
                         key={index}
