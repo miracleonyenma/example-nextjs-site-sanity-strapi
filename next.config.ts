@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "0a5a6f57f9f3.ngrok-free.app",
       },
+      {
+        hostname: "localhost",
+      },
     ],
   },
 };
