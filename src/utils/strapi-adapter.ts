@@ -31,7 +31,7 @@ export interface StrapiEntity {
 const adaptSlug = (slug?: string) => ({ current: slug ?? "" });
 
 // Standardized image adapter
-const adaptImage = (img?: StrapiEntity) => img?.data?.attributes ?? null;
+const adaptImage = (img?: StrapiEntity) => img?.data ?? null;
 
 // Standardized authors adapter
 const adaptAuthors = (authors?: { data?: StrapiEntity[] }) =>
