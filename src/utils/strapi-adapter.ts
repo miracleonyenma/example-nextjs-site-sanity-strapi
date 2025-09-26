@@ -19,7 +19,6 @@ export interface StrapiResponse<T = any> {
 export interface StrapiEntity {
   id?: string | number;
   documentId?: string | number;
-  attributes?: Record<string, any>;
   [key: string]: any;
 }
 
