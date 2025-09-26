@@ -29,7 +29,7 @@ export default async function BlogPage() {
             const imageUrl = post.image ? getStrapiImageUrl(post.image) : null;
             return (
               <article key={post._id} className="card default raised hoverable">
-                <Link href={`/blog/${post.slug.current}`} className="block">
+                <Link href={`/blog/${post.slug}`} className="block">
                   {imageUrl && (
                     <div className="card-media">
                       <Image

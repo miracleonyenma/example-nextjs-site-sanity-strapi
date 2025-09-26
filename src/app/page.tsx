@@ -111,7 +111,7 @@ export default async function HomePage() {
                 return (
                   <Link
                     key={post._id}
-                    href={`/blog/${post.slug.current}`}
+                    href={`/blog/${post.slug}`}
                     className="card default raised hoverable interactive"
                   >
                     {imageUrl && (
